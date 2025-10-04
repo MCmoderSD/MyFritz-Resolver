@@ -40,7 +40,7 @@ jobs:
           ARTIFACT=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "artifact=$ARTIFACT" >> $GITHUB_OUTPUT
-          echo "filename=${ARTIFACT}-${VERSION}.jar" >> $GITHUB_OUTPUT
+          echo "filename=${ARTIFACT}-${VERSION}-shaded.jar" >> $GITHUB_OUTPUT
 
       - name: Build JAR
         id: build
