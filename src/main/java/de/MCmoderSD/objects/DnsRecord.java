@@ -15,6 +15,7 @@ public class DnsRecord {
     private final boolean proxiable;
     private final boolean proxied;
     private final int ttl;
+    private final String comment;
     private final Timestamp created;
     private final Timestamp modified;
 
@@ -31,6 +32,7 @@ public class DnsRecord {
         if (!dnsRecord.has("proxiable")) throw new IllegalArgumentException("Record must have a proxiable");
         if (!dnsRecord.has("proxied")) throw new IllegalArgumentException("Record must have a proxied");
         if (!dnsRecord.has("ttl")) throw new IllegalArgumentException("Record must have a ttl");
+        if (!dnsRecord.has("comment")) throw new IllegalArgumentException("Record must have a comment");
         if (!dnsRecord.has("created_on")) throw new IllegalArgumentException("Record must have a created_on");
         if (!dnsRecord.has("modified_on")) throw new IllegalArgumentException("Record must have a modified_on");
 
@@ -42,6 +44,7 @@ public class DnsRecord {
         proxiable = dnsRecord.get("proxiable").asBoolean();
         proxied = dnsRecord.get("proxied").asBoolean();
         ttl = dnsRecord.get("ttl").asInt();
+        comment = dnsRecord.get("comment") == null ? null : dnsRecord.get("comment").asText().equals("null") ? null : dnsRecord.get("comment").asText();
         created = Timestamp.valueOf(dnsRecord.get("created_on").asText().replace("T", " ").replace("Z", ""));
         modified = Timestamp.valueOf(dnsRecord.get("modified_on").asText().replace("T", " ").replace("Z", ""));
     }
@@ -72,6 +75,10 @@ public class DnsRecord {
 
     public int getTtl() {
         return ttl;
+    }
+
+    public String getComment() {
+        return comment;
     }
 
     public Timestamp getCreated() {

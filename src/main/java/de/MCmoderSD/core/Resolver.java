@@ -27,7 +27,7 @@ public class Resolver {
         new Thread(() -> {
 
             // Initial IP resolution
-            String ip = resolveIP(domain, type);
+            String ip = record.getContent();
 
             // Loop
             while (true) {

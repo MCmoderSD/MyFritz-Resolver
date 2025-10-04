@@ -2,6 +2,7 @@ package de.MCmoderSD.core;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.MCmoderSD.objects.DnsRecord;
 import enums.RecordType;
 
@@ -94,10 +95,15 @@ public class CloudflareClient {
             if (content == null || content.isBlank()) throw new IllegalArgumentException("Content cannot be null or blank");
 
             // Create a JSON object for the request body
-            JsonNode bodyNode = mapper.createObjectNode()
-                    .put("type", type.name())
+            ObjectNode bodyNode = mapper.createObjectNode()
+                    .put("id", record.getId())
                     .put("name", record.getName())
-                    .put("content", content);
+                    .put("type", type.name())
+                    .put("content", content)
+                    .put("proxiable", record.isProxiable())
+                    .put("proxied", record.isProxied())
+                    .put("ttl", record.getTtl());
+            if (record.getComment() != null) bodyNode.put("comment", record.getComment());
 
             // Convert JSON object to string
             String body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(bodyNode);

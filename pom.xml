@@ -6,7 +6,7 @@
 
     <groupId>de.MCmoderSD</groupId>
     <artifactId>MyFritz-Resolver</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -23,26 +23,34 @@
     </repositories>
 
     <dependencies>
+
+        <!-- JsonUtility for JSON handling -->
         <dependency>
             <groupId>de.MCmoderSD</groupId>
             <artifactId>JsonUtility</artifactId>
             <version>1.3.3</version>
         </dependency>
+
+        <!-- DNS Lookup library -->
         <dependency>
             <groupId>dnsjava</groupId>
             <artifactId>dnsjava</artifactId>
             <version>3.6.3</version>
         </dependency>
+
+        <!-- SLF4J for logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>2.0.17</version>
         </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
             <version>2.0.17</version>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -73,4 +81,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>
