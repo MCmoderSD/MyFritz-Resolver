@@ -1,7 +1,9 @@
 package de.MCmoderSD.core;
 
-import de.MCmoderSD.objects.DnsRecord;
-import enums.RecordType;
+import de.MCmoderSD.cloudflare.core.CloudflareClient;
+import de.MCmoderSD.cloudflare.enums.RecordType;
+import de.MCmoderSD.cloudflare.objects.DnsRecord;
+import de.MCmoderSD.cloudflare.objects.ModifiedRecord;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.TextParseException;
 
@@ -38,8 +40,16 @@ public class Resolver {
 
                     // Update DNS record if IP has changed
                     if (resolvedIp != null && !resolvedIp.equals(ip)) {
+
+                        // Update record in Cloudflare
                         ip = resolvedIp;
-                        boolean updated = client.updateDnsRecord(record, resolvedIp);
+                        ModifiedRecord modifiedRecord = new ModifiedRecord(record);
+                        modifiedRecord.modifyContent(ip);
+
+                        // Perform update
+                        boolean updated = client.updateRecord(modifiedRecord);
+
+                        // Log result
                         if (updated) System.out.println("[" + threadName + "] Updated " + type + " record to: " + ip);
                         else System.out.println("[" + threadName + "] No update needed for " + type + " record. Current IP: " + ip);
                     }

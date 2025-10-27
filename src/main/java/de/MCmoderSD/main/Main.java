@@ -1,10 +1,10 @@
 package de.MCmoderSD.main;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import de.MCmoderSD.core.CloudflareClient;
+import de.MCmoderSD.cloudflare.core.CloudflareClient;
+import de.MCmoderSD.cloudflare.objects.DnsRecord;
 import de.MCmoderSD.core.Resolver;
 import de.MCmoderSD.json.JsonUtility;
-import de.MCmoderSD.objects.DnsRecord;
+import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -26,60 +26,66 @@ public class Main {
             throw new RuntimeException("Failed to load configuration: " + e.getMessage(), e);
         }
 
-        // Validate configuration
-        if (config == null || config.isEmpty()) throw new IllegalArgumentException("Configuration cannot be null or empty");
-        if (!config.has("zoneId")) throw new IllegalArgumentException("Configuration must have a zoneId");
-        if (!config.has("apiToken")) throw new IllegalArgumentException("Configuration must have an apiToken");
-        if (!config.has("delay")) throw new IllegalArgumentException("Configuration must have a delay");
-        if (!config.has("records")) throw new IllegalArgumentException("Configuration must have records");
-        if (config.get("zoneId") == null) throw new IllegalArgumentException("zoneId cannot be null");
-        if (config.get("apiToken") == null) throw new IllegalArgumentException("apiToken cannot be null");
-        if (config.get("delay") == null) throw new IllegalArgumentException("delay cannot be null");
-        if (config.get("records").isEmpty() || !config.get("records").isArray()) throw new IllegalArgumentException("records must be a non-empty array");
+        // Validate config
+        if (config == null || config.isNull() || config.isEmpty()) throw new IllegalArgumentException("Configuration cannot be null or empty");
+        if (!config.has("zoneId") || config.get("zoneId").isNull() || !config.get("zoneId").isString()) throw new IllegalArgumentException("Configuration must contain a valid 'zoneId' field");
+        if (!config.has("apiToken") || config.get("apiToken").isNull() || !config.get("apiToken").isString()) throw new IllegalArgumentException("Configuration must contain a valid 'apiToken' field");
+        if (!config.has("delay") || config.get("delay").isNull() || !config.get("delay").isNumber()) throw new IllegalArgumentException("Configuration must contain a valid 'delay' field");
+        if (!config.has("records") || config.get("records").isNull() || !config.get("records").isArray() || config.get("records").isEmpty()) throw new IllegalArgumentException("Configuration must contain a valid 'records' array field");
 
-        // Extract configuration values
-        String zoneId = config.get("zoneId").asText();
-        String apiToken = config.get("apiToken").asText();
+        // Parse config
+        String zoneId = config.get("zoneId").asString();
+        String apiToken = config.get("apiToken").asString();
         var delay = config.get("delay").asLong();
 
-        // Validate configuration values
-        if (zoneId.isBlank()) throw new IllegalArgumentException("zoneId cannot be blank");
-        if (apiToken.isBlank()) throw new IllegalArgumentException("apiToken cannot be blank");
-        if (delay <= 0) throw new IllegalArgumentException("delay must be greater than 0");
+        // Validate parsed config
+        if (zoneId.isBlank()) throw new IllegalArgumentException("'zoneId' cannot be blank");
+        if (apiToken.isBlank()) throw new IllegalArgumentException("'apiToken' cannot be blank");
+        if (delay <= 0) throw new IllegalArgumentException("'delay' must be greater than 0");
+
+        // Validate each record
+        JsonNode records = config.get("records");
+        var size = records.size();
+
+        // Prepare arrays
+        String[] id = new String[size];
+        String[] domain = new String[size];
+
+        // Parse records
+        for (var i = 0; i < size; i++) {
+
+            // Validate record
+            var record = records.get(i);
+            if (record == null || record.isNull() || record.isEmpty()) throw new IllegalArgumentException("Record at index " + i + " cannot be null or empty");
+            if (!record.has("id") || record.get("id").isNull() || !record.get("id").isString()) throw new IllegalArgumentException("Record at index " + i + " must contain a valid 'id' field");
+            if (!record.has("domain") || record.get("domain").isNull() || !record.get("domain").isString()) throw new IllegalArgumentException("Record at index " + i + " must contain a valid 'domain' field");
+
+            // Extract fields
+            id[i] = record.get("id").asString();
+            domain[i] = record.get("domain").asString();
+
+            // Validate fields
+            if (id[i].isBlank()) throw new IllegalArgumentException("'id' in record at index " + i + " cannot be blank");
+            if (domain[i].isBlank()) throw new IllegalArgumentException("'domain' in record at index " + i + " cannot be blank");
+        }
 
         // Initialize Cloudflare client
         CloudflareClient client = new CloudflareClient(zoneId, apiToken);
 
         // Get current DNS records
-        HashSet<DnsRecord> dnsRecords = client.getDnsRecords();
+        HashSet<DnsRecord> dnsRecords = client.getRecords();
         if (dnsRecords == null || dnsRecords.isEmpty()) throw new IllegalStateException("No DNS records found");
 
         // Process each record in the configuration
-        for (var record : config.get("records")) {
-
-            // Validate record
-            if (record == null) throw new IllegalArgumentException("Record cannot be null");
-            if (record.isEmpty()) throw new IllegalArgumentException("Record cannot be empty");
-            if (!record.has("id")) throw new IllegalArgumentException("Record must have an id");
-            if (!record.has("domain")) throw new IllegalArgumentException("Record must have a domain");
-            if (record.get("id") == null) throw new IllegalArgumentException("Record must have an id");
-            if (record.get("domain") == null) throw new IllegalArgumentException("Record must have a domain");
-
-            // Extract id and domain
-            String id = record.get("id").asText();
-            String domain = record.get("domain").asText();
-
-            // Validate id and domain
-            if (id.isBlank()) throw new IllegalArgumentException("Record id cannot be blank");
-            if (domain.isBlank()) throw new IllegalArgumentException("Record domain cannot be blank");
+        for (var i = 0; i < size; i++) {
 
             // Find DNS record by id
-            DnsRecord dnsRecord = dnsRecords.stream().filter(r -> r.getId().equals(id)).findFirst().orElse(null);
-            if (dnsRecord == null) throw new IllegalArgumentException("No DNS record found for id: " + id);
+            DnsRecord dnsRecord = client.getRecordMap().get(id[i]);
+            if (dnsRecord == null) throw new IllegalArgumentException("No DNS record found for id: " + id[i]);
 
-            // Create Resolver for the domain
-            new Resolver(client, dnsRecord, domain, delay * 1000L);
-            System.out.println("Started resolver for domain: " + domain + " with record ID: " + id);
+            // Create Resolver Thread for the domain
+            new Resolver(client, dnsRecord, domain[i], delay * 1000L);
+            System.out.println("Started resolver for domain: " + domain[i] + " with record ID: " + id[i]);
         }
     }
 }

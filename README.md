@@ -104,7 +104,6 @@ docker run -d \
 ### Docker Compose
 `docker-compose.yaml` example:
 ```yaml
-version: '3.8'
 services:
   myfritz-resolver:
     image: mcmodersd/myfritz-resolver:latest

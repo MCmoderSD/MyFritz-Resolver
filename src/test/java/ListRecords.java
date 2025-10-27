@@ -1,7 +1,7 @@
-import com.fasterxml.jackson.databind.JsonNode;
-import de.MCmoderSD.core.CloudflareClient;
+import de.MCmoderSD.cloudflare.core.CloudflareClient;
+import de.MCmoderSD.cloudflare.objects.DnsRecord;
 import de.MCmoderSD.json.JsonUtility;
-import de.MCmoderSD.objects.DnsRecord;
+import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -13,17 +13,16 @@ public class ListRecords {
         // Load configuration
         JsonNode config = JsonUtility.getInstance().load("/config.json");
 
-        String zoneId = config.get("zoneId").asText();
-        String apiToken = config.get("apiToken").asText();
+        String zoneId = config.get("zoneId").asString();
+        String apiToken = config.get("apiToken").asString();
 
         // Initialize Cloudflare client
         CloudflareClient client = new CloudflareClient(zoneId, apiToken);
 
         // Get current DNS records
-        HashSet<DnsRecord> dnsRecords = client.getDnsRecords();
+        HashSet<DnsRecord> dnsRecords = client.getRecords();
         if (dnsRecords == null || dnsRecords.isEmpty()) throw new IllegalStateException("No DNS records found");
         for (var record : dnsRecords) {
-            System.out.println("--------------------------------");
             System.out.println("ID: " + record.getId());
             System.out.println("Name: " + record.getName());
             System.out.println("Type: " + record.getType());
