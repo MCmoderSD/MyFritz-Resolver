@@ -7,7 +7,8 @@ import de.MCmoderSD.cloudflare.objects.ModifiedRecord;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.TextParseException;
 
-import static org.xbill.DNS.Type.*;
+import static org.xbill.DNS.Type.A;
+import static org.xbill.DNS.Type.AAAA;
 
 @SuppressWarnings("BusyWait")
 public class Resolver {
@@ -50,8 +51,8 @@ public class Resolver {
                         boolean updated = client.updateRecord(modifiedRecord);
 
                         // Log result
-                        if (updated) System.out.println("[" + threadName + "] Updated " + type + " record to: " + ip);
-                        else System.out.println("[" + threadName + "] No update needed for " + type + " record. Current IP: " + ip);
+                        if (updated) IO.println("[" + threadName + "] Updated " + type + " record to: " + ip);
+                        else IO.println("[" + threadName + "] No update needed for " + type + " record. Current IP: " + ip);
                     }
 
                     // Wait for next resolution
@@ -65,7 +66,7 @@ public class Resolver {
     }
 
     // Resolve IP address based on record type
-    private String resolveIP(String domain, RecordType type) {
+    private static String resolveIP(String domain, RecordType type) {
         try {
 
             // Validate inputs

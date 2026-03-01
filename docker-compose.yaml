@@ -1,0 +1,12 @@
+services:
+  myfritz-resolver:
+    container_name: MyFritz-Resolver
+    image: mcmodersd/myfritz-resolver:latest
+    restart: unless-stopped
+    pull_policy: always
+    volumes:
+      - ./config.json:/app/config.json
+
+networks:
+  default:
+    name: MyFritz-Resolver-Network

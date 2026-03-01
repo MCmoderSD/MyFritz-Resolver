@@ -1,19 +1,14 @@
 # [MyFritz-Resolver](https://hub.docker.com/repository/docker/mcmodersd/myfritz-resolver/)
 
-
 ## Overview
 MyFritz-Resolver is a Dynamic DNS (DDNS) service that keeps your MyFritz! domains in sync with your current IP addresses (both IPv4 and IPv6).
 It automatically updates DNS records on Cloudflare whenever your IP changes.
-
-
 
 ## Features
 - Supports both IPv4 (A) and IPv6 (AAAA) records.
 - Automatic DNS updates using the Cloudflare API.
 - Lightweight and easy to deploy using Docker or Docker Compose.
 - Configurable check intervals for IP changes.
-
-
 
 ## Table of Contents
 - [Overview](#overview)
@@ -25,8 +20,6 @@ It automatically updates DNS records on Cloudflare whenever your IP changes.
   - [Docker](#docker)
   - [Docker Compose](#docker-compose)
   - [Direct via Java](#direct-via-java)
-
-
 
 ## Configuration
 Create a `config.json` file with the following structure:
@@ -87,8 +80,6 @@ example.com                         # Domain
 2404:6800:4003:c11::64              # IPv6 address
 ```
 
-
-
 ## Setup
 You can run MyFritz-Resolver via Docker, Docker Compose, or directly on your system.
 
@@ -109,16 +100,17 @@ services:
     image: mcmodersd/myfritz-resolver:latest
     container_name: MyFritz-Resolver
     restart: unless-stopped
+    pull_policy: always
     volumes:
       - ./config.json:/app/config.json
 ```
 Start the service:
 ```bash
-docker-compose up -d
+docker-compose up
 ```
 
 ### Direct via Java
-1. Install Java 21 or higher. Download from [Oracle](https://www.oracle.com/java/technologies/downloads/#java21).
+1. Install Java 25 or higher. Download from [Oracle](https://www.oracle.com/java/technologies/downloads/#java25).
 2. Download the latest release from [GitHub Releases](https://www.GitHub.com/MCmoderSD/MyFritz-Resolver/releases/latest).
 3. Run the resolver:
 ```bash
