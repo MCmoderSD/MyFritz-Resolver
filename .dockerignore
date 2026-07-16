@@ -1,8 +1,5 @@
 ### IntelliJ IDEA ###
 .idea/
-*.iws
-*.iml
-*.ipr
 
 ### Output ###
 out/artifacts/
@@ -12,6 +9,3 @@ out/artifacts/
 
 ### Target ###
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/

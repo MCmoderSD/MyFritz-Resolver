@@ -1,7 +1,7 @@
 # [MyFritz-Resolver](https://hub.docker.com/repository/docker/mcmodersd/myfritz-resolver/)
 
 ## Overview
-MyFritz-Resolver is a Dynamic DNS (DDNS) service that keeps your MyFritz! domains in sync with your current IP addresses (both IPv4 and IPv6).
+MyFritz-Resolver is a Dynamic DNS (DynDNS) service that keeps your MyFritz! domains in sync with your current IP addresses (both IPv4 and IPv6).
 It automatically updates DNS records on Cloudflare whenever your IP changes.
 
 ## Features
@@ -103,6 +103,10 @@ services:
     pull_policy: always
     volumes:
       - ./config.json:/app/config.json
+
+networks:
+  default:
+    name: MyFritz-Resolver-Network
 ```
 Start the service:
 ```bash

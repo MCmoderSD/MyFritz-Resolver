@@ -1,14 +1,14 @@
 package de.MCmoderSD.main;
 
 import de.MCmoderSD.cloudflare.core.CloudflareClient;
-import de.MCmoderSD.cloudflare.objects.DnsRecord;
 import de.MCmoderSD.core.Resolver;
 import de.MCmoderSD.json.JsonUtility;
 
-import tools.jackson.databind.JsonNode;
-
 import java.util.HashSet;
 
+import static java.lang.IO.println;
+
+@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public class Main {
 
     void main(String[] args) {
@@ -18,7 +18,7 @@ public class Main {
         if (args[0] == null || args[0].isEmpty()) throw new IllegalArgumentException("Config path cannot be null or empty");
 
         // Load configuration
-        JsonNode config = JsonUtility.getInstance().loadFile(args[0]);
+        var config = JsonUtility.getInstance().loadFile(args[0]);
 
         // Validate config
         if (config == null || config.isNull() || config.isEmpty()) throw new IllegalArgumentException("Configuration cannot be null or empty");
@@ -28,8 +28,8 @@ public class Main {
         if (!config.has("records") || config.get("records").isNull() || !config.get("records").isArray() || config.get("records").isEmpty()) throw new IllegalArgumentException("Configuration must contain a valid 'records' array field");
 
         // Parse config
-        String zoneId = config.get("zoneId").asString();
-        String apiToken = config.get("apiToken").asString();
+        var zoneId = config.get("zoneId").asString();
+        var apiToken = config.get("apiToken").asString();
         var delay = config.get("delay").asLong();
 
         // Validate parsed config
@@ -38,12 +38,12 @@ public class Main {
         if (delay <= 0) throw new IllegalArgumentException("'delay' must be greater than 0");
 
         // Validate each record
-        JsonNode records = config.get("records");
+        var records = config.get("records");
         var size = records.size();
 
         // Prepare arrays
-        String[] id = new String[size];
-        String[] domain = new String[size];
+        var id = new String[size];
+        var domain = new String[size];
 
         // Parse records
         for (var i = 0; i < size; i++) {
@@ -64,22 +64,23 @@ public class Main {
         }
 
         // Initialize Cloudflare client
-        CloudflareClient client = new CloudflareClient(zoneId, apiToken);
+        var client = new CloudflareClient(zoneId, apiToken);
 
         // Get current DNS records
-        HashSet<DnsRecord> dnsRecords = client.getRecords();
+        var dnsRecords = client.getRecords();
         if (dnsRecords == null || dnsRecords.isEmpty()) throw new IllegalStateException("No DNS records found");
 
         // Process each record in the configuration
+        var resolver = new HashSet<Resolver>();
         for (var i = 0; i < size; i++) {
 
             // Find DNS record by id
-            DnsRecord dnsRecord = client.getRecordMap().get(id[i]);
+            var dnsRecord = client.getRecordMap().get(id[i]);
             if (dnsRecord == null) throw new IllegalArgumentException("No DNS record found for id: " + id[i]);
 
             // Create Resolver Thread for the domain
-            new Resolver(client, dnsRecord, domain[i], delay * 1000L);
-            IO.println("Started resolver for domain: " + domain[i] + " with record ID: " + id[i]);
+            resolver.add(new Resolver(client, dnsRecord, domain[i], delay * 1000L));
+            println("Started resolver for domain: " + domain[i] + " with record ID: " + id[i]);
         }
     }
 }

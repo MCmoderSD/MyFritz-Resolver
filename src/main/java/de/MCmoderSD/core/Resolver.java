@@ -4,14 +4,17 @@ import de.MCmoderSD.cloudflare.core.CloudflareClient;
 import de.MCmoderSD.cloudflare.enums.RecordType;
 import de.MCmoderSD.cloudflare.objects.DnsRecord;
 import de.MCmoderSD.cloudflare.objects.ModifiedRecord;
+
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.TextParseException;
 
 import static org.xbill.DNS.Type.A;
 import static org.xbill.DNS.Type.AAAA;
 
-@SuppressWarnings("BusyWait")
+@SuppressWarnings({"BusyWait", "unused"})
 public class Resolver {
+
+    private final Thread thread;
 
     // Constructor
     public Resolver(CloudflareClient client, DnsRecord record, String domain, long delay) {
@@ -23,21 +26,21 @@ public class Resolver {
         if (delay <= 0) throw new IllegalArgumentException("Delay must be greater than 0");
 
         // Initialize variables
-        RecordType type = record.getType();
-        String threadName = record.getId() + " - " + type + " - " + domain;
+        var type = record.getType();
+        var threadName = record.getId() + " - " + type + " - " + domain;
 
         // Resolver Thread
-        new Thread(() -> {
+        thread = new Thread(() -> {
 
             // Initial IP resolution
-            String ip = record.getContent();
+            var ip = record.getContent();
 
             // Loop
             while (true) {
                 try {
 
                     // Resolve IP based on record type
-                    String resolvedIp = resolveIP(domain, type);
+                    var resolvedIp = resolveIP(domain, type);
 
                     // Update DNS record if IP has changed
                     if (resolvedIp != null && !resolvedIp.equals(ip)) {
@@ -48,7 +51,7 @@ public class Resolver {
                         modifiedRecord.modifyContent(ip);
 
                         // Perform update
-                        boolean updated = client.updateRecord(modifiedRecord);
+                        var updated = client.updateRecord(modifiedRecord);
 
                         // Log result
                         if (updated) IO.println("[" + threadName + "] Updated " + type + " record to: " + ip);
@@ -62,7 +65,10 @@ public class Resolver {
                     throw new RuntimeException("Resolver thread interrupted", e);
                 }
             }
-        }, threadName).start();
+        }, threadName);
+
+        // Start thread
+        thread.start();
     }
 
     // Resolve IP address based on record type
@@ -91,5 +97,15 @@ public class Resolver {
         } catch (TextParseException e) {
             throw new RuntimeException("Failed to resolve domain: " + domain, e);
         }
+    }
+
+    // Setter
+    public void stop() {
+        thread.interrupt();
+    }
+
+    // Getter
+    public boolean isAlive() {
+        return thread.isAlive();
     }
 }
