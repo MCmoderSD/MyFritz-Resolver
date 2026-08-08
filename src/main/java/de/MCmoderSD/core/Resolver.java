@@ -8,6 +8,7 @@ import de.MCmoderSD.cloudflare.objects.ModifiedRecord;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.TextParseException;
 
+import static java.lang.IO.println;
 import static org.xbill.DNS.Type.A;
 import static org.xbill.DNS.Type.AAAA;
 
@@ -29,6 +30,9 @@ public class Resolver {
         var type = record.getType();
         var threadName = record.getId() + " - " + type + " - " + domain;
 
+        // Fail fast on record types that cannot be resolved
+        if (type != RecordType.A && type != RecordType.AAAA) throw new IllegalArgumentException("Unsupported record type: " + type);
+
         // Resolver Thread
         thread = new Thread(() -> {
 
@@ -45,26 +49,37 @@ public class Resolver {
                     // Update DNS record if IP has changed
                     if (resolvedIp != null && !resolvedIp.equals(ip)) {
 
-                        // Update record in Cloudflare
-                        ip = resolvedIp;
-                        ModifiedRecord modifiedRecord = new ModifiedRecord(record);
-                        modifiedRecord.modifyContent(ip);
+                        // Prepare modified record
+                        var modifiedRecord = new ModifiedRecord(record);
+                        modifiedRecord.modifyContent(resolvedIp);
 
                         // Perform update
                         var updated = client.updateRecord(modifiedRecord);
 
-                        // Log result
-                        if (updated) IO.println("[" + threadName + "] Updated " + type + " record to: " + ip);
-                        else IO.println("[" + threadName + "] No update needed for " + type + " record. Current IP: " + ip);
+                        // Only accept the new IP once Cloudflare confirmed it, otherwise retry next iteration
+                        if (updated) {
+                            ip = resolvedIp;
+                            println("[" + threadName + "] Updated " + type + " record to: " + ip);
+                        } else {
+                            println("[" + threadName + "] Failed to update " + type + " record to: " + resolvedIp + ". Retrying in " + delay + "ms");
+                        }
                     }
 
-                    // Wait for next resolution
-                    Thread.sleep(delay);
+                } catch (Exception e) {
+                    println("[" + threadName + "] Error: " + e.getMessage());
+                }
 
+                try {
+                    Thread.sleep(delay);
                 } catch (InterruptedException e) {
-                    throw new RuntimeException("Resolver thread interrupted", e);
+                    Thread.currentThread().interrupt();
+                    break;
                 }
             }
+
+            // Log shutdown
+            println("[" + threadName + "] Stopped");
+
         }, threadName);
 
         // Start thread
