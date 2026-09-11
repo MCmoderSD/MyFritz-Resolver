@@ -68,7 +68,7 @@ public class Main {
 
         // Get current DNS records
         var dnsRecords = client.getRecords();
-        if (dnsRecords == null || dnsRecords.isEmpty()) throw new IllegalStateException("No DNS records found");
+        if (dnsRecords == null || dnsRecords.isEmpty()) throw new IllegalStateException("No DNS records were found");
 
         // Process each record in the configuration
         var resolver = new HashSet<Resolver>();

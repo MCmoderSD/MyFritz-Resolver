@@ -16,7 +16,7 @@ void main() {
 
     // Get current DNS records
     var dnsRecords = client.getRecords();
-    if (dnsRecords == null || dnsRecords.isEmpty()) throw new IllegalStateException("No DNS records found");
+    if (dnsRecords == null || dnsRecords.isEmpty()) throw new IllegalStateException("No DNS records were found");
     for (var record : dnsRecords) {
         println("ID: " + record.getId());
         println("Name: " + record.getName());

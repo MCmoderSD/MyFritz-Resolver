@@ -1,7 +1,7 @@
 # [MyFritz-Resolver](https://hub.docker.com/repository/docker/mcmodersd/myfritz-resolver/)
 
 ## Overview
-MyFritz-Resolver is a Dynamic DNS (DynDNS) service that keeps your MyFritz! domains in sync with your current IP addresses (both IPv4 and IPv6).
+MyFritz-Resolver is a Dynamic DNS (DynDNS) service that keeps your MyFritz! Domains in sync with your current IP addresses (both IPv4 and IPv6).
 It automatically updates DNS records on Cloudflare whenever your IP changes.
 
 ## Features
@@ -46,7 +46,7 @@ Create a `config.json` file with the following structure:
 ```
 - `zoneId`: Cloudflare Zone ID for your domain.
 - `apiToken`: Cloudflare API token with DNS edit permissions.
-- `delay`: Interval (seconds) to check for IP changes (default 300s).
+- `delay`: Interval (seconds) to check for IP changes (default 300 s).
 - `records`: List of DNS records to manage.
     - `nickname`: Reference name for your own use (not read by the application, purely for keeping your `config.json` readable).
     - `id`: Cloudflare record ID.
@@ -126,7 +126,7 @@ java -jar MyFritz-Resolver-<version>.jar config.json
 ```
 Replace `<version>` with the version you downloaded, and `config.json` with your configuration path.
 
-Each release includes MD5, SHA1 and SHA256 checksums in its release notes, plus a [build provenance attestation](https://github.com/MCmoderSD/MyFritz-Resolver/attestations) you can verify with `gh attestation verify`.
+Each release includes MD5, SHA1, and SHA256 checksums in its release notes, plus a [build provenance attestation](https://github.com/MCmoderSD/MyFritz-Resolver/attestations) you can verify with `gh attestation verify`.
 
 ### Image Tags & Registries
 Images are built for `linux/amd64` and `linux/arm64` and published to both registries below on every release:
@@ -136,4 +136,4 @@ Images are built for `linux/amd64` and `linux/arm64` and published to both regis
 | Docker Hub | `mcmodersd/myfritz-resolver`         | `latest`, `<version>` |
 | GHCR       | `ghcr.io/mcmodersd/myfritz-resolver` | `latest`, `<version>` |
 
-Use `latest` to always track the newest release, or pin a `<version>` tag (e.g. `1.0.0`) for reproducible deployments.
+Use `latest` to always track the newest release or pin a `<version>` tag (e.g. `1.0.0`) for reproducible deployments.
